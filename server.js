@@ -1,35 +1,73 @@
 'use strict';
 
-require('dotenv').config();
 const express = require('express');
 const app = express();
+require('dotenv').config();
 
 const cors = require('cors');
+
+//  Declare variable
+app.use(cors());
+const PORT = process.env.PORT || 3001;
+
+// use corss to allow to past data to front end
+
 app.use(cors());
 
 
-const PORT = process.env.PORT || 3001;
-
+// define routes
 app.get('/location', (request, response) => {
   response.send('Happy!');
+  try {
+    const dataArray = require('./data/geo.json');
+    const geoData = dataArray [0];
+    const city = request.query.city;
+
+    let location = new Location (city, geoData);
+    response.status(200).send(location);
+  }
+  catch(error) {
+    errorHandler('If you did not get results. Please try again.', response);
+  }
 });
 
-//   let location = {
-//     search_query: city,
-//     formatted_query:geoData[0].display_name.
-    
-//     longitude = geoData[0].lon, 
-//   }
-//   response.status (200).send (l)
-// });
+app.get('/weather', (request, response) => {
 
-function location(city, locationData){
+  try {
+    const weatherData = require('./data/darksky.json');
+    const dailyWeather = weatherData.daily.data;
+    let dailyArray =[];
+
+    dailyWeather.forEach(day => {
+      dailyArray.push(new Weather(day));
+    });
+    response.status(200).send(dailyArray);
+
+  } catch(error) {
+    errorHandler('If you did not get result. Please try again.', response);
+  }
+});
+
+
+// Define function
+
+function Location(city, localData) {
   this.search_query = city;
-  this.latitude = locationData.lat;
-  this. longtitude = locationData.lon;
+  this.formatted_query = localData.display_name;
+  this.latitude = localData.lat;
+  this.longitude = localData.lon;
 }
 
 
+
+function Weather(dailyForecast) {
+  this.forecast = dailyForecast.summary;
+  this.time = new Date(dailyForecast.time).toDateString();
+}
+
+function errorHandler(string, response) {
+  response.status(500).send(string);
+}
 
 
 
