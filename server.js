@@ -35,18 +35,22 @@ app.get('/weather', (request, response) => {
 
   try {
     const weatherData = require('./data/darksky.json');
-    const dailyWeather = weatherData.daily.data;
-    let dailyArray =[];
-
-    dailyWeather.forEach(day => {
-      dailyArray.push(new Weather(day));
+    const dailyWeather = weatherData.daily.data.map(day => {
+      return new MapWeather(day);
     });
-    response.status(200).send(dailyArray);
+    // let dailyArray =[];
 
+    // dailyWeather.forEach(day => {
+    //   dailyArray.push(new Weather(day));
+    // });
+    // response.status(200).send(dailyArray);
+    response.status(200).send(dailyWeather);
   } catch(error) {
     errorHandler('If you did not get result. Please try again.', response);
   }
 });
+
+
 
 
 // Define function
@@ -60,7 +64,7 @@ function Location(city, localData) {
 
 
 
-function Weather(dailyForecast) {
+function MapWeather(dailyForecast) {
   this.forecast = dailyForecast.summary;
   this.time = new Date(dailyForecast.time).toDateString();
 }
