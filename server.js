@@ -7,6 +7,11 @@ require('dotenv').config();
 const cors = require('cors');
 let locations ={};
 
+// database connection set up
+const pg =require('pg');
+const client = new pg.Client(process.env.DATABASE_URL);
+client.on ('error', err => {throw err;});
+
 //  Declare variable
 app.use(cors());
 const PORT = process.env.PORT || 3001;
@@ -14,6 +19,7 @@ const PORT = process.env.PORT || 3001;
 // use corss to allow to past data to front end
 
 app.use(cors());
+
 
 
 // define routes
@@ -110,7 +116,7 @@ function Location(city, localData) {
 
 function MapWeather(dailyForecast) {
   this.forecast = dailyForecast.summary;
-  this.time = new Date(dailyForecast.time).toDateString();
+  this.time = new Date(dailyForecast.time *1000).toDateString();
 }
 
 function errorHandler(string, response) {
@@ -118,4 +124,14 @@ function errorHandler(string, response) {
 }
 
 // Make sure the server is listening for requests
-app.listen(PORT, () => console.log(`Never Give up ${PORT}`));
+// app.listen(PORT, () => console.log(`Never Give up ${PORT}`));
+
+client.connect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log('Never Give up', PORT);
+    });
+  })
+  .catch(err => {
+    throw `PG Startup Error: ${err.message}`;
+  });
