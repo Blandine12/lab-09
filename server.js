@@ -33,7 +33,7 @@ function locationHandler(request, response) {
     let SQL = 'select * from locations where search_query = $1;';
     let values = [city];
 
-  
+
 
     return client.query(SQL, values)
       .then(result => {
@@ -101,6 +101,47 @@ app.get('/weather', (request, response) => {
 });
 
 
+app.get('/events', (request, response) => {
+  let key = process.env.EVENTFUL_API_KEY;
+  let {search_query }= request.query;
+  const eventDataUrl =`http://api.eventful.com/json/events/search?keywords=music&location=${search_query}&app_key=${key}`;
+
+  superagent.get(eventDataUrl)
+    .then(eventData => {
+      let eventMassData = JSON.parse(eventData.text);
+      let localEvent = eventMassData.events.event.map(thisEventData => {
+        return new NewEvent(thisEventData);
+      });
+      response.status(200).send(localEvent);
+    })
+    .catch(() => {
+      errorHandler('If you did not get result. Please, try again', request, response);
+    });
+
+});
+
+
+app.get('/movies', (request, response) => {
+  console.log('hello');
+  let key = process.env.Movie_API_key;
+  let {search_query }= request.query;
+  const movieDataUrl =`https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${search_query}`;
+
+  superagent.get(movieDataUrl)
+    .then(movieData => {
+      let movieMassData = movieData.body.results;
+      let localMovie = movieMassData.map(thisMovieData => {
+        return new NewMovie(thisMovieData);
+      });
+      response.status(200).send(localMovie);
+    })
+    .catch(() => {
+      errorHandler('If you did not get result. Please, try again', request, response);
+    });
+
+});
+
+
 // Define function
 
 
@@ -118,6 +159,31 @@ function MapWeather(dailyForecast) {
   this.forecast = dailyForecast.summary;
   this.time = new Date(dailyForecast.time *1000).toDateString();
 }
+
+
+function NewEvent(thisEventData) {
+  this.name = thisEventData.title;
+  this.event_date = thisEventData.start_time.slice(0,10);
+  this.link = thisEventData.url;
+  this.summary = thisEventData.description;
+
+}
+
+function NewMovie(thisMovieData) {
+  this.title = thisMovieData.title;
+  this.overview = thisMovieData.overview;
+  this.average_votes = thisMovieData.average_votes;
+  this.total_votes = thisMovieData.total_votes;
+  this.image_url = `https://image.tmdb.org/t/p/w500${thisMovieData.backdrop_path}`;
+  this.popularity = thisMovieData.popularity;
+  this.released_on = thisMovieData.released_on;
+}
+
+
+
+
+
+
 
 function errorHandler(string, response) {
   response.status(500).send(string);
