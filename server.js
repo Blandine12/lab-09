@@ -4,6 +4,7 @@ const express = require('express');
 const app = express();
 require('dotenv').config();
 
+
 const cors = require('cors');
 let locations = {};
 
@@ -122,7 +123,7 @@ app.get('/events', (request, response) => {
 
 
 app.get('/movies', (request, response) => {
-  console.log('hello');
+
   let key = process.env.Movie_API_key;
   let {search_query }= request.query;
   const movieDataUrl =`https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${search_query}`;
@@ -141,6 +142,25 @@ app.get('/movies', (request, response) => {
 
 });
 
+
+app.get('/yelp', (request, response) =>{
+  let key = process.env.Yelp_API_key;
+  let {latitude, longitude} = request.query;
+  let yelpDataUrl = `https://api.yelp.com/v3/businesses/search?term=delis&latitude=${latitude}&longitude=${longitude}`;
+  superagent
+    .get(yelpDataUrl)
+    .set('Authorization', `Bearer ${key}`)
+    .then(yelpData => {
+      let businessList = JSON.parse(yelpData.text).businesses;
+      let business = businessList.map(thisYelpdata => {
+        return new Yelp(thisYelpdata);
+      });
+      response.status(200).send(business);
+    })
+    .catch(() => {
+      errorHandler('If you did not get result. Please, try again', request, response);
+    });
+});
 
 // Define function
 
@@ -178,6 +198,18 @@ function NewMovie(thisMovieData) {
   this.popularity = thisMovieData.popularity;
   this.released_on = thisMovieData.released_on;
 }
+
+function Yelp(thisYelpdata) {
+  this.name = thisYelpdata.name;
+  this.image_url = thisYelpdata.image_url;
+  this.price = thisYelpdata.price;
+  this.rating = thisYelpdata.rating;
+  this.url = thisYelpdata.url;
+
+}
+
+
+
 
 
 
