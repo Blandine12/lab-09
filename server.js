@@ -129,7 +129,9 @@ app.get('/movies', (request, response) => {
 
   let key = process.env.Movie_API_key;
   let {search_query }= request.query;
+  console.log('it is working,', `https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${search_query}`);
   const movieDataUrl =`https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${search_query}`;
+
 
   superagent.get(movieDataUrl)
     .then(movieData => {
