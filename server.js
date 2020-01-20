@@ -129,7 +129,6 @@ app.get('/movies', (request, response) => {
 
   let key = process.env.Movie_API_key;
   let {search_query }= request.query;
-  console.log('it is working,', `https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${search_query}`);
   const movieDataUrl =`https://api.themoviedb.org/3/search/movie?api_key=${key}&language=en-US&query=${search_query}`;
 
 
@@ -139,10 +138,11 @@ app.get('/movies', (request, response) => {
       let localMovie = movieMassData.map(thisMovieData => {
         return new NewMovie(thisMovieData);
       });
+      console.log(localMovie)
       response.status(200).send(localMovie);
     })
-    .catch(() => {
-      errorHandler('If you did not get result. Please, try again', request, response);
+    .catch((error) => {
+      errorHandler(error, request, response);
     });
 
 });
