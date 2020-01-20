@@ -53,11 +53,14 @@ function locationHandler(request, response) {
         else {
           superagent.get(url)
             .then(data => {
-              // add to DB
-              const geoData = data.body[0];
-              const location = new Location(city, geoData);
-              locations[url] = location;
-              response.send(location);
+            // add to DB
+            // const geoData = data.body[0];
+              const location = new Location(city, data.body[0]);
+              // locations[url] = location;
+              let sql = 'INSERT INTO locations (search_query, formatted_query, latitude, longitude) VALUES ($1, $2, $3, $4);';
+              let safeValues = [location.search_query, location.formatted_query, location.latitude, location.longitude];
+              client.query(sql, safeValues);
+              response.status(200).send(location);
             })
             .catch(() => {
               errorHandler('If you did not get result. Please, try again', request, response);
