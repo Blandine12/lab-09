@@ -141,8 +141,8 @@ app.get('/movies', (request, response) => {
       console.log(localMovie)
       response.status(200).send(localMovie);
     })
-    .catch((error) => {
-      errorHandler(error, request, response);
+    .catch(() => {
+      errorHandler('sorry something wrong', request, response);
     });
 
 });
